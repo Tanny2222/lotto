@@ -545,10 +545,6 @@
     }
     thead{ display: table-header-group; }
     tbody{ display: table-row-group; }
-    tbody tr:nth-child(4){
-      page-break-after: always;
-      break-after: page;
-    }
     thead th:nth-child(1){width:10%;}
     thead th:nth-child(2){width:6%;}
     thead th:nth-child(3){width:5%;}
@@ -593,7 +589,7 @@
     .est-flag{ font-size:10.5px; }
     hr.prize-sep{ margin:4px 0; }
     td.num{ white-space:normal !important; }
-    tr{ page-break-inside: avoid; }
+    tr{ page-break-inside: avoid; break-inside: avoid; }
   }
 </style>
 </head>
