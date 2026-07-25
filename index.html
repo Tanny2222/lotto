@@ -29,7 +29,7 @@
       var(--paper);
     color:var(--ink);
     font-family:'Sarabun', sans-serif;
-    font-size:18px;
+    font-size:19px;
     padding:32px 16px 80px;
     min-height:100vh;
   }
@@ -67,7 +67,7 @@
     line-height:1.25;
   }
   .sub{
-    font-size:18px;
+    font-size:19px;
     color:var(--muted);
     max-width:680px;
     line-height:1.7;
@@ -193,7 +193,7 @@
   }
   thead th{
     font-family:'Space Mono', monospace;
-    font-size:13px;
+    font-size:14px;
     letter-spacing:0.06em;
     text-transform:uppercase;
     color:var(--paper);
@@ -204,9 +204,21 @@
     top:0;
   }
   thead th.num{text-align:center;}
+  thead th.sortable{
+    cursor:pointer;
+    user-select:none;
+    transition:background .15s ease;
+  }
+  thead th.sortable:hover{background:var(--green);}
+  .sort-arrow{
+    display:inline-block;
+    margin-left:6px;
+    font-size:11px;
+    color:var(--gold-bright);
+  }
   tbody td{
     padding:16px;
-    font-size:17px;
+    font-size:18px;
     border-bottom:1px solid var(--ledger-line);
     vertical-align:top;
     text-align:center;
@@ -228,7 +240,7 @@
   .bank-tag{
     display:inline-block;
     font-family:'Space Mono', monospace;
-    font-size:9.5px;
+    font-size:10.5px;
     letter-spacing:0.05em;
     padding:2px 6px;
     margin-top:4px;
@@ -241,20 +253,20 @@
     color:var(--deep-green);
   }
   .computed.guarantee{color:var(--stamp-red);}
-  .computed.total{color:var(--gold-bright); background:rgba(184,134,44,0.12); font-size:18px;}
+  .computed.total{color:var(--gold-bright); background:rgba(184,134,44,0.12); font-size:20px;}
   .per-year{
     display:inline-block;
     margin-top:4px;
     font-family:'Space Mono', monospace;
-    font-size:12.5px;
+    font-size:13.5px;
     font-weight:400;
     color:var(--muted);
     background:none;
   }
-  .muted-note{font-size:14.5px; color:var(--muted); min-width:230px;}
+  .muted-note{font-size:16px; color:var(--muted); min-width:230px;}
   .guarantee-breakdown{
     font-family:'Space Mono', monospace;
-    font-size:13px;
+    font-size:14.5px;
     line-height:1.75;
     color:var(--green);
   }
@@ -266,13 +278,13 @@
   }
   .est-flag{
     font-family:'Space Mono', monospace;
-    font-size:12px;
+    font-size:13px;
     color:var(--gold);
   }
 
   footer.notes{
     margin-top:24px;
-    font-size:15px;
+    font-size:16px;
     color:var(--muted);
     line-height:1.8;
     border-top:1px dashed var(--ledger-line);
@@ -292,7 +304,7 @@
   }
   @media print{
     *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-    body{ padding:0; background:#ffffff; font-size:9px; }
+    body{ padding:0; background:#ffffff; font-size:12px; }
     .wrap{ width:100%; }
     header.hero, .control-panel, footer.notes{ display:none !important; }
     .print-header{
@@ -303,17 +315,17 @@
     .print-title{
       font-family:'Noto Serif Thai', serif;
       font-weight:700;
-      font-size:15px;
+      font-size:17px;
       color:var(--deep-green);
       margin-bottom:2mm;
     }
     .print-principal{
       font-family:'Noto Serif Thai', serif;
       font-weight:700;
-      font-size:12px;
+      font-size:14px;
       color:var(--deep-green);
     }
-    .print-principal b{color:var(--stamp-red); font-size:15px;}
+    .print-principal b{color:var(--stamp-red); font-size:17px;}
     .table-card{
       border:1px solid var(--deep-green);
       box-shadow:none;
@@ -343,7 +355,7 @@
     thead th:nth-child(9){width:11%;}
     thead th:nth-child(10){width:19%;}
     thead th{
-      font-size:12.5px;
+      font-size:16px;
       letter-spacing:0;
       padding:6px 3px;
       position:static;
@@ -353,22 +365,24 @@
     thead th:nth-child(8), thead th:nth-child(10){
       font-size:10.5px;
     }
+    .sort-arrow{ display:none !important; }
     tbody td{
-      font-size:12.5px;
+      font-size:16px;
       padding:7px 3px;
       line-height:1.45;
       vertical-align:middle;
       word-break:break-word;
       overflow-wrap:break-word;
     }
-    td.product{ font-size:13px; min-width:0; }
-    .bank-tag{ font-size:8.5px; padding:1px 4px; margin-top:2px; }
-    .computed.total{ font-size:13px; color:#7a4f14 !important; font-weight:700; background:none !important; }
-    .per-year{ font-size:10px; margin-top:2px; color:#7a4f14 !important; }
+    td.product{ font-size:16.5px; min-width:0; }
+    .bank-tag{ font-size:10.5px; padding:1px 4px; margin-top:2px; }
+    .computed.total{ font-size:16.5px; color:#7a4f14 !important; font-weight:700; background:none !important; }
+    .per-year{ font-size:12.5px; margin-top:2px; color:#7a4f14 !important; }
+    /* รางวัลต่องวด และ รางวัลที่ 1 คงขนาดฟอนต์เดิม ไม่ขยายตอน print pdf */
     .guarantee-breakdown{ font-size:9.5px; line-height:1.4; }
     .muted-note{ font-size:9.5px; min-width:0; }
     .prize1-cell{ font-size:10.5px; }
-    .est-flag{ font-size:8.5px; }
+    .est-flag{ font-size:10.5px; }
     hr.prize-sep{ margin:4px 0; }
     td.num{ white-space:normal !important; }
     tr{ page-break-inside: avoid; }
@@ -423,7 +437,7 @@
           <th class="num">ดอกเบี้ยครบกำหนด</th>
           <th class="num">การันตีเลขท้าย/งวด</th>
           <th>รางวัลต่องวด</th>
-          <th class="num">เงินทั้งหมดหลังครบกำหนด</th>
+          <th class="num sortable" id="sortTotalHeader" title="คลิกเพื่อสลับเรียงลำดับ">เงินทั้งหมดหลังครบกำหนด<span class="sort-arrow" id="sortArrow">▼</span></th>
           <th>รางวัลที่ 1</th>
         </tr>
       </thead>
@@ -530,11 +544,28 @@ function computeRow(p, principal){
   return { units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 };
 }
 
+let currentPrincipal = 5000000;
+let sortDirection = 'desc'; // 'desc' = มากไปน้อย (บรรทัดแรก = เงินทั้งหมดหลังครบกำหนดสูงสุด), 'asc' = น้อยไปมาก
+
+function getSortedRows(principal){
+  const rows = PRODUCTS.map(p => ({ p, ...computeRow(p, principal) }));
+  rows.sort((a, b) => sortDirection === 'desc'
+    ? b.totalAfterMaturity - a.totalAfterMaturity
+    : a.totalAfterMaturity - b.totalAfterMaturity);
+  return rows;
+}
+
+function updateSortArrow(){
+  const arrow = document.getElementById('sortArrow');
+  if(arrow) arrow.textContent = sortDirection === 'desc' ? '▼' : '▲';
+}
+
 function render(principal){
+  currentPrincipal = principal;
+  updateSortArrow();
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  PRODUCTS.forEach(p => {
-    const { units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 } = computeRow(p, principal);
+  getSortedRows(principal).forEach(({ p, units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 }) => {
 
     // สร้างข้อความอธิบายที่มาของ "การันตีเลขท้าย/งวด" จากจำนวนรอบครบชุด (cycles3, cycles4) x มูลค่าการันตีต่อรอบ (rate3, rate4)
     // ถ้ามีข้อมูลจำนวนครั้งที่หมุนจริงต่องวด (draws3/amt3, draws4/amt4) จะแตกให้เห็นละเอียดขึ้นอีกชั้นว่า rate3/rate4 มาจากไหน
@@ -622,6 +653,11 @@ document.getElementById('principalRange').addEventListener('input', (e) => {
 
 renderQuickButtons();
 setPrincipal(5000000);
+
+document.getElementById('sortTotalHeader').addEventListener('click', () => {
+  sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+  render(currentPrincipal);
+});
 
 document.getElementById('exportPdfBtn').addEventListener('click', () => {
   window.print();
