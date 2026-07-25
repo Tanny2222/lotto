@@ -282,6 +282,65 @@
     color:var(--gold);
   }
 
+  .edit-fields{
+    display:none;
+    margin-top:6px;
+    padding-top:6px;
+    border-top:1px dashed var(--ledger-line);
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--green);
+    line-height:1.9;
+    text-align:left;
+  }
+  .edit-fields.open{display:block;}
+  .edit-fields .edit-row{white-space:nowrap;}
+  .edit-toggle{
+    display:inline-block;
+    cursor:pointer;
+    margin-left:5px;
+    color:var(--gold);
+    font-size:13px;
+    user-select:none;
+    transition:color .15s ease;
+  }
+  .edit-toggle:hover{color:var(--stamp-red);}
+  .edit-toggle.active{color:var(--stamp-red);}
+  .mini-input{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--stamp-red);
+    background:#fffefb;
+    border:none;
+    border-bottom:1.5px solid var(--gold);
+    width:4.5em;
+    text-align:center;
+    padding:1px 2px;
+  }
+  .mini-input:focus{outline:none; border-bottom-color:var(--stamp-red);}
+  .mini-input.wide{width:6em;}
+  .stamp[contenteditable="true"]{cursor:text;}
+  .stamp[contenteditable="true"]:hover{background:rgba(155,59,44,0.06);}
+  .reset-btn{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    background:transparent;
+    border:1px solid var(--stamp-red);
+    color:var(--stamp-red);
+    padding:12px 16px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .reset-btn:hover{background:var(--stamp-red); color:var(--paper);}
+
+  .print-date{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:1mm;
+  }
+
   footer.notes{
     margin-top:24px;
     font-size:16px;
@@ -366,6 +425,7 @@
       font-size:10.5px;
     }
     .sort-arrow{ display:none !important; }
+    .no-print, .edit-fields, .reset-btn{ display:none !important; }
     tbody td{
       font-size:16px;
       padding:7px 3px;
@@ -396,7 +456,7 @@
     <p class="eyebrow">Savings Lottery Bonds · ปีงบประมาณ 2569</p>
     <h1>เปรียบเทียบสลากออมทรัพย์<br>ธ.ก.ส. &amp; ออมสิน</h1>
     <p class="sub">ปรับ "เงินต้น" ด้านล่าง เพื่อคำนวณจำนวนหน่วย ดอกเบี้ยเมื่อครบกำหนด และการันตีรางวัลเลขท้ายขั้นต่ำต่องวด ของสลากแต่ละชุดโดยอัตโนมัติ</p>
-    <div class="stamp">ข้อมูล ณ ก.ค. 2569</div>
+    <div class="stamp" id="dateStamp" contenteditable="true" spellcheck="false" title="คลิกเพื่อแก้ไขวันที่ข้อมูล">ข้อมูล ณ ก.ค. 2569</div>
   </header>
 
   <section class="control-panel">
@@ -418,11 +478,15 @@
     <div class="field" style="flex:0 0 auto;">
       <button id="exportPdfBtn" class="export-pdf-btn" type="button">⬇ Export PDF (A4 แนวนอน)</button>
     </div>
+    <div class="field no-print" style="flex:0 0 auto;">
+      <button id="resetOverridesBtn" class="reset-btn" type="button" title="ล้างค่าดอกเบี้ย/รางวัลต่องวดที่แก้ไขไว้ กลับเป็นค่าเริ่มต้น">↺ รีเซ็ตค่าที่แก้ไข</button>
+    </div>
   </section>
 
   <div class="print-header">
     <div class="print-title">เปรียบเทียบสลากออมทรัพย์ ธ.ก.ส. &amp; ออมสิน</div>
     <div class="print-principal">คำนวณจาก <b id="printPrincipalReadout">5,000,000</b> บาท</div>
+    <div class="print-date" id="printDateStamp">ข้อมูล ณ ก.ค. 2569</div>
   </div>
 
   <div class="table-card">
@@ -547,8 +611,42 @@ function computeRow(p, principal){
 let currentPrincipal = 5000000;
 let sortDirection = 'desc'; // 'desc' = มากไปน้อย (บรรทัดแรก = เงินทั้งหมดหลังครบกำหนดสูงสุด), 'asc' = น้อยไปมาก
 
+// ---- ค่าที่ผู้ใช้แก้ไขเอง (ดอกเบี้ย / รางวัลต่องวดเลขท้าย) เก็บแยกจากข้อมูลตั้งต้น ----
+// เก็บใน localStorage เพื่อให้แก้ทีเดียวแล้วใช้ได้ทุกครั้งที่เปิดไฟล์นี้ จนกว่าจะกด "รีเซ็ตค่าที่แก้ไข"
+const OVERRIDES_KEY = 'lotteryCompareOverridesV1';
+const DATE_KEY = 'lotteryCompareDateStampV1';
+
+let overrides = {};
+try{ overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY)) || {}; }catch(e){ overrides = {}; }
+
+// เก็บว่าช่องแก้ไข (ต่อชุด ต่อประเภท) ไหนถูกเปิดไว้อยู่ ณ ตอนนี้ — เปิดเมื่อคลิกไอคอน ✎ เท่านั้น
+let openPanels = new Set();
+
+function saveOverrides(){
+  try{ localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides)); }catch(e){}
+}
+
+// รวมข้อมูลตั้งต้นของแต่ละชุดเข้ากับค่าที่ผู้ใช้แก้ไข (ถ้ามี) แล้วคำนวณ rate3/rate4 ใหม่จาก
+// จำนวนครั้ง (draws) x มูลค่าต่อรางวัล (amt) ที่แก้ไขล่าสุด
+function getEffective(p){
+  const o = overrides[p.name] || {};
+  const merged = Object.assign({}, p, o);
+  if(!merged.noGuarantee){
+    if(!merged.no3Digit && merged.draws3 != null && merged.amt3 != null){
+      merged.rate3 = merged.draws3 * merged.amt3;
+    }
+    if(merged.draws4 != null && merged.amt4 != null){
+      merged.rate4 = merged.draws4 * merged.amt4;
+    }
+  }
+  return merged;
+}
+
 function getSortedRows(principal){
-  const rows = PRODUCTS.map(p => ({ p, ...computeRow(p, principal) }));
+  const rows = PRODUCTS.map(p => {
+    const eff = getEffective(p);
+    return { p, eff, ...computeRow(eff, principal) };
+  });
   rows.sort((a, b) => sortDirection === 'desc'
     ? b.totalAfterMaturity - a.totalAfterMaturity
     : a.totalAfterMaturity - b.totalAfterMaturity);
@@ -565,22 +663,22 @@ function render(principal){
   updateSortArrow();
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  getSortedRows(principal).forEach(({ p, units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 }) => {
+  getSortedRows(principal).forEach(({ eff, units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 }) => {
 
     // สร้างข้อความอธิบายที่มาของ "การันตีเลขท้าย/งวด" จากจำนวนรอบครบชุด (cycles3, cycles4) x มูลค่าการันตีต่อรอบ (rate3, rate4)
     // ถ้ามีข้อมูลจำนวนครั้งที่หมุนจริงต่องวด (draws3/amt3, draws4/amt4) จะแตกให้เห็นละเอียดขึ้นอีกชั้นว่า rate3/rate4 มาจากไหน
     const parts = [];
-    if(cycles3 > 0 && !p.no3Digit){
-      const rateNote = p.draws3 ? ` (= ${p.draws3} ครั้ง/งวด × ${fmt(p.amt3)} บาท)` : '';
-      parts.push(`เลขท้าย 3 ตัว: ${fmt(cycles3)} รอบ × ${fmt(p.rate3)} บาท${rateNote} = ${fmt(cycles3 * p.rate3)} บาท`);
+    if(cycles3 > 0 && !eff.no3Digit){
+      const rateNote = eff.draws3 ? ` (= ${eff.draws3} ครั้ง/งวด × ${fmt(eff.amt3)} บาท)` : '';
+      parts.push(`เลขท้าย 3 ตัว: ${fmt(cycles3)} รอบ × ${fmt(eff.rate3)} บาท${rateNote} = ${fmt(cycles3 * eff.rate3)} บาท`);
     }
-    if(p.no3Digit) parts.push(`เลขท้าย 3 ตัว: ยกเลิกแล้ว (ปัจจุบันมีเฉพาะเลขท้าย 4 ตัว)`);
+    if(eff.no3Digit) parts.push(`เลขท้าย 3 ตัว: ยกเลิกแล้ว (ปัจจุบันมีเฉพาะเลขท้าย 4 ตัว)`);
     if(cycles4 > 0){
-      const rateNote = p.draws4 ? ` (= ${p.draws4} ครั้ง/งวด × ${fmt(p.amt4)} บาท)` : '';
-      parts.push(`เลขท้าย 4 ตัว: ${fmt(cycles4)} รอบ × ${fmt(p.rate4)} บาท${rateNote} = ${fmt(cycles4 * p.rate4)} บาท`);
+      const rateNote = eff.draws4 ? ` (= ${eff.draws4} ครั้ง/งวด × ${fmt(eff.amt4)} บาท)` : '';
+      parts.push(`เลขท้าย 4 ตัว: ${fmt(cycles4)} รอบ × ${fmt(eff.rate4)} บาท${rateNote} = ${fmt(cycles4 * eff.rate4)} บาท`);
     }
     let breakdownHtml;
-    if(p.noGuarantee){
+    if(eff.noGuarantee){
       breakdownHtml = `<div class="guarantee-breakdown">ชุดนี้ไม่มีกลไกรางวัลเลขท้าย 3/4 ตัว — เป็นการสุ่มรางวัลจากทั้งชุดสลาก (900 รางวัล/เดือน) จึงไม่การันตีตามจำนวนหน่วยที่ถือ</div>`;
     } else if(parts.length){
       breakdownHtml = `<div class="guarantee-breakdown">${parts.join('<br>')}${parts.length > 1 ? `<br><b>รวม = ${fmt(guarantee)} บาท/งวด</b>` : ''}</div>`;
@@ -588,18 +686,37 @@ function render(principal){
       breakdownHtml = `<div class="guarantee-breakdown">ยังไม่ครบ 1,000 หน่วย (1 รอบ) จึงยังไม่การันตีถูกรางวัล</div>`;
     }
 
+    // ช่องแก้ไข "ดอกเบี้ย" (interestPerUnit) — ใช้คำนวณ ดอกเบี้ยครบกำหนด และ เงินทั้งหมดหลังครบกำหนด
+    const interestKey = `${eff.name}::interest`;
+    const interestOpen = openPanels.has(interestKey);
+    const interestEditHtml = `
+      <span class="edit-toggle no-print${interestOpen ? ' active' : ''}" data-toggle="${interestKey}" title="แก้ไขดอกเบี้ย">✎</span>
+      <div class="edit-fields no-print${interestOpen ? ' open' : ''}">
+        <div class="edit-row">ดบ. <input type="number" step="0.01" class="mini-input" data-name="${eff.name}" data-field="interestPerUnit" value="${eff.interestPerUnit}"> บาท/หน่วย</div>
+      </div>`;
+
+    // ช่องแก้ไข "รางวัลต่องวดเลขท้าย" (จำนวนครั้งที่หมุน x มูลค่าต่อรางวัล ต่องวด) — ไม่แสดงถ้าชุดนี้ไม่มีกลไกการันตี
+    let guaranteeEditHtml = '';
+    if(!eff.noGuarantee){
+      const guaranteeKey = `${eff.name}::guarantee`;
+      const guaranteeOpen = openPanels.has(guaranteeKey);
+      const row3 = !eff.no3Digit ? `<div class="edit-row">3 ตัว: <input type="number" class="mini-input" data-name="${eff.name}" data-field="draws3" value="${eff.draws3 ?? 0}"> ครั้ง × <input type="number" class="mini-input" data-name="${eff.name}" data-field="amt3" value="${eff.amt3 ?? 0}"> บาท</div>` : '';
+      const row4 = `<div class="edit-row">4 ตัว: <input type="number" class="mini-input" data-name="${eff.name}" data-field="draws4" value="${eff.draws4 ?? 0}"> ครั้ง × <input type="number" class="mini-input" data-name="${eff.name}" data-field="amt4" value="${eff.amt4 ?? 0}"> บาท</div>`;
+      guaranteeEditHtml = `<span class="edit-toggle no-print${guaranteeOpen ? ' active' : ''}" data-toggle="${guaranteeKey}" title="แก้ไขรางวัลต่องวดเลขท้าย">✎</span><div class="edit-fields no-print${guaranteeOpen ? ' open' : ''}">${row3}${row4}</div>`;
+    }
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="product">${p.name}<br><span class="bank-tag ${p.bank}">${p.bankLabel}</span></td>
-      <td class="num">${fmt(p.unit)} บาท</td>
-      <td>${p.term}</td>
-      <td class="num">${p.interestPct}</td>
+      <td class="product">${eff.name}<br><span class="bank-tag ${eff.bank}">${eff.bankLabel}</span></td>
+      <td class="num">${fmt(eff.unit)} บาท</td>
+      <td>${eff.term}</td>
+      <td class="num">${eff.interestPct}${interestEditHtml}</td>
       <td class="num computed">${fmt(units)} หน่วย</td>
       <td class="num computed">${fmt(interestAtMaturity)} บาท</td>
-      <td class="num computed guarantee">${p.noGuarantee ? 'ไม่มี (สุ่มทั้งชุด)' : fmt(guarantee) + ' บาท'}${p.estimated ? '<br><span class="est-flag">[ประมาณ]</span>' : ''}</td>
-      <td class="muted-note">${breakdownHtml}<hr class="prize-sep">${p.perDraw}</td>
-      <td class="num computed total">${fmt(totalAfterMaturity)} บาท<br><span class="per-year">≈ ${fmt(totalAfterMaturity / p.termYears)} บาท/ปี</span></td>
-      <td class="prize1-cell">${p.prize1}</td>
+      <td class="num computed guarantee">${eff.noGuarantee ? 'ไม่มี (สุ่มทั้งชุด)' : fmt(guarantee) + ' บาท'}${eff.estimated ? '<br><span class="est-flag">[ประมาณ]</span>' : ''}${guaranteeEditHtml}</td>
+      <td class="muted-note">${breakdownHtml}<hr class="prize-sep">${eff.perDraw}</td>
+      <td class="num computed total">${fmt(totalAfterMaturity)} บาท<br><span class="per-year">≈ ${fmt(totalAfterMaturity / eff.termYears)} บาท/ปี</span></td>
+      <td class="prize1-cell">${eff.prize1}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -662,6 +779,56 @@ document.getElementById('sortTotalHeader').addEventListener('click', () => {
 document.getElementById('exportPdfBtn').addEventListener('click', () => {
   window.print();
 });
+
+// ---- แก้ไขค่าดอกเบี้ย / รางวัลต่องวดเลขท้าย รายชุด ----
+document.getElementById('tableBody').addEventListener('click', (e) => {
+  const toggle = e.target.closest('.edit-toggle');
+  if(!toggle) return;
+  const key = toggle.dataset.toggle;
+  if(openPanels.has(key)) openPanels.delete(key); else openPanels.add(key);
+  render(currentPrincipal);
+});
+
+document.getElementById('tableBody').addEventListener('change', (e) => {
+  const t = e.target;
+  if(!t.classList.contains('mini-input')) return;
+  const name = t.dataset.name;
+  const field = t.dataset.field;
+  const value = parseFloat(t.value);
+  if(!overrides[name]) overrides[name] = {};
+  overrides[name][field] = isNaN(value) ? 0 : value;
+  saveOverrides();
+  render(currentPrincipal);
+});
+
+document.getElementById('resetOverridesBtn').addEventListener('click', () => {
+  if(confirm('ล้างค่าดอกเบี้ย/รางวัลต่องวดเลขท้ายที่แก้ไขไว้ทั้งหมด กลับเป็นค่าเริ่มต้น?')){
+    overrides = {};
+    saveOverrides();
+    render(currentPrincipal);
+  }
+});
+
+// ---- แก้ไข "ข้อมูล ณ วันที่" — คลิกที่ตราประทับแล้วพิมพ์แก้ได้เลย ----
+const dateStampEl = document.getElementById('dateStamp');
+const printDateEl = document.getElementById('printDateStamp');
+try{
+  const savedDate = localStorage.getItem(DATE_KEY);
+  if(savedDate){
+    dateStampEl.textContent = savedDate;
+    printDateEl.textContent = savedDate;
+  }
+}catch(e){}
+dateStampEl.addEventListener('blur', () => {
+  const val = dateStampEl.textContent.trim() || 'ข้อมูล ณ ก.ค. 2569';
+  dateStampEl.textContent = val;
+  printDateEl.textContent = val;
+  try{ localStorage.setItem(DATE_KEY, val); }catch(e){}
+});
+dateStampEl.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); dateStampEl.blur(); }
+});
+
 </script>
 </body>
 </html>
