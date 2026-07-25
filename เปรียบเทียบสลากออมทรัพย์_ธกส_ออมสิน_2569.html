@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เปรียบเทียบสลากออมทรัพย์ ธ.ก.ส. และออมสิน 2569</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;600;700&family=Sarabun:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --paper:#f6f1e4;
+    --ledger-line:#d9cfb3;
+    --ink:#1f2d24;
+    --deep-green:#14361f;
+    --green:#1f5232;
+    --gold:#b8862c;
+    --gold-bright:#d9a441;
+    --stamp-red:#9b3b2c;
+    --muted:#6b6250;
+    --card:#fffdf7;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(184,134,44,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(20,54,31,0.05), transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Sarabun', sans-serif;
+    font-size:18px;
+    padding:32px 16px 80px;
+    min-height:100vh;
+  }
+
+  .wrap{width:90%; max-width:none; margin:0 auto;}
+
+  header.hero{
+    position:relative;
+    border:1px solid var(--deep-green);
+    background:var(--card);
+    padding:36px 32px 28px;
+    margin-bottom:28px;
+    box-shadow: 0 1px 0 var(--ledger-line), 0 8px 24px -18px rgba(20,54,31,0.4);
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:6px;
+    border:1px solid rgba(184,134,44,0.35);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:14px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:700;
+    font-size:clamp(30px, 4.4vw, 44px);
+    margin:0 0 8px;
+    color:var(--deep-green);
+    line-height:1.25;
+  }
+  .sub{
+    font-size:18px;
+    color:var(--muted);
+    max-width:680px;
+    line-height:1.7;
+    margin:0;
+  }
+  .stamp{
+    position:absolute; top:28px; right:28px;
+    border:2px solid var(--stamp-red);
+    color:var(--stamp-red);
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.08em;
+    padding:6px 10px;
+    transform:rotate(6deg);
+    opacity:0.85;
+    border-radius:2px;
+  }
+
+  .control-panel{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:20px;
+    background:var(--card);
+    border:1px solid var(--deep-green);
+    padding:22px 26px;
+    margin-bottom:26px;
+    box-shadow: 0 1px 0 var(--ledger-line);
+  }
+  .control-panel .field{flex:1 1 260px;}
+  label.field-label{
+    display:block;
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--green);
+    margin-bottom:8px;
+  }
+  .amount-input-row{
+    display:flex;
+    align-items:center;
+    border:1.5px solid var(--deep-green);
+    background:#fffefb;
+  }
+  .amount-input-row span.baht-sign{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--gold);
+    padding:0 14px;
+    border-right:1.5px solid var(--deep-green);
+  }
+  #principalInput{
+    flex:1;
+    border:none;
+    outline:none;
+    background:transparent;
+    font-family:'Space Mono', monospace;
+    font-size:24px;
+    padding:14px;
+    color:var(--ink);
+    width:100%;
+  }
+  #principalRange{
+    width:100%;
+    accent-color:var(--gold);
+    margin-top:10px;
+  }
+  .quick-amounts{display:flex; gap:8px; flex-wrap:wrap;}
+  .quick-amounts button{
+    font-family:'Space Mono', monospace;
+    font-size:15px;
+    background:transparent;
+    border:1px solid var(--green);
+    color:var(--green);
+    padding:9px 14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .quick-amounts button:hover, .quick-amounts button.active{
+    background:var(--green);
+    color:var(--paper);
+  }
+  .principal-readout{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--deep-green);
+    white-space:nowrap;
+  }
+  .principal-readout b{color:var(--stamp-red); font-size:23px;}
+
+  .table-card{
+    background:var(--card);
+    border:1px solid var(--deep-green);
+    overflow-x:auto;
+    box-shadow: 0 1px 0 var(--ledger-line);
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1320px;
+  }
+  thead th{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--paper);
+    background:var(--deep-green);
+    text-align:center;
+    padding:16px 16px;
+    position:sticky;
+    top:0;
+  }
+  thead th.num{text-align:center;}
+  tbody td{
+    padding:16px;
+    font-size:17px;
+    border-bottom:1px solid var(--ledger-line);
+    vertical-align:top;
+    text-align:center;
+  }
+  tbody tr:nth-child(even){background:rgba(184,134,44,0.045);}
+  tbody tr:hover{background:rgba(31,82,50,0.06);}
+  td.num{
+    text-align:center;
+    font-family:'Space Mono', monospace;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  td.product{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:600;
+    color:var(--deep-green);
+    min-width:150px;
+  }
+  .bank-tag{
+    display:inline-block;
+    font-family:'Space Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.05em;
+    padding:2px 6px;
+    margin-top:4px;
+    border:1px solid currentColor;
+  }
+  .bank-tag.baac{color:var(--green);}
+  .bank-tag.gsb{color:var(--stamp-red);}
+  .computed{
+    font-weight:700;
+    color:var(--deep-green);
+  }
+  .computed.guarantee{color:var(--stamp-red);}
+  .computed.total{color:var(--gold-bright); background:rgba(184,134,44,0.12); font-size:18px;}
+  .per-year{
+    display:inline-block;
+    margin-top:4px;
+    font-family:'Space Mono', monospace;
+    font-size:12.5px;
+    font-weight:400;
+    color:var(--muted);
+    background:none;
+  }
+  .muted-note{font-size:14.5px; color:var(--muted); min-width:230px;}
+  .guarantee-breakdown{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    line-height:1.75;
+    color:var(--green);
+  }
+  .guarantee-breakdown b{color:var(--stamp-red);}
+  hr.prize-sep{
+    border:none;
+    border-top:1px dashed var(--ledger-line);
+    margin:8px 0;
+  }
+  .est-flag{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--gold);
+  }
+
+  footer.notes{
+    margin-top:24px;
+    font-size:15px;
+    color:var(--muted);
+    line-height:1.8;
+    border-top:1px dashed var(--ledger-line);
+    padding-top:16px;
+  }
+  footer.notes b{color:var(--deep-green);}
+
+  @media (max-width: 640px){
+    header.hero{padding:26px 20px;}
+    .stamp{position:static; display:inline-block; margin-top:14px; transform:none;}
+    .control-panel{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Savings Lottery Bonds · ปีงบประมาณ 2569</p>
+    <h1>เปรียบเทียบสลากออมทรัพย์<br>ธ.ก.ส. &amp; ออมสิน</h1>
+    <p class="sub">ปรับ "เงินต้น" ด้านล่าง เพื่อคำนวณจำนวนหน่วย ดอกเบี้ยเมื่อครบกำหนด และการันตีรางวัลเลขท้ายขั้นต่ำต่องวด ของสลากแต่ละชุดโดยอัตโนมัติ</p>
+    <div class="stamp">ข้อมูล ณ ก.ค. 2569</div>
+  </header>
+
+  <section class="control-panel">
+    <div class="field" style="flex:1 1 320px;">
+      <label class="field-label" for="principalInput">เงินต้น (บาท)</label>
+      <div class="amount-input-row">
+        <span class="baht-sign">฿</span>
+        <input type="text" id="principalInput" inputmode="numeric" value="5,000,000">
+      </div>
+      <input type="range" id="principalRange" min="10000" max="20000000" step="10000" value="5000000">
+    </div>
+    <div class="field" style="flex:2 1 360px;">
+      <label class="field-label">เลือกไว</label>
+      <div class="quick-amounts" id="quickAmounts"></div>
+    </div>
+    <div class="field" style="flex:0 0 auto;">
+      <div class="principal-readout">คำนวณจาก <b id="principalReadout">5,000,000</b> บาท</div>
+    </div>
+  </section>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>ชุดสลาก</th>
+          <th class="num">ราคา/หน่วย</th>
+          <th>อายุสลาก</th>
+          <th class="num">ดอกเบี้ย/ปี</th>
+          <th class="num">จำนวนหน่วย</th>
+          <th class="num">ดอกเบี้ยครบกำหนด</th>
+          <th class="num">การันตีเลขท้าย/งวด</th>
+          <th>รางวัลต่องวด</th>
+          <th class="num">เงินทั้งหมดหลังครบกำหนด</th>
+          <th>รางวัลที่ 1</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <footer class="notes">
+    <p><b>วิธีคำนวณ:</b> จำนวนหน่วย = เงินต้น ÷ ราคาต่อหน่วย (ปัดเศษหน่วยที่ซื้อไม่ได้ทิ้ง) · ดอกเบี้ยครบกำหนด = จำนวนหน่วย × ดอกเบี้ยบาท/หน่วยเมื่อครบอายุ · การันตีรางวัลเลขท้าย คำนวณจากหลักการ "จำนวนหน่วยต่อเนื่องครบ 1 ชุดตัวเลข" กล่าวคือ ทุกๆ 1,000 หน่วยการันตีถูกรางวัลเลขท้าย 3 ตัว และทุกๆ 10,000 หน่วยการันตีถูกรางวัลเลขท้าย 4 ตัว ตามจำนวนครั้งที่แต่ละชุดสลากหมุนรางวัลจริง (ตัวเลขนี้เป็น<b>ขั้นต่ำที่แน่นอน</b> ไม่รวมโอกาสถูกรางวัลใหญ่/รางวัลย่อยแบบสุ่มอื่นๆ) · <b>เงินทั้งหมดหลังครบกำหนด</b> = (การันตีเลขท้าย/งวด × 12 เดือน × อายุสลากเป็นปี) + ดอกเบี้ยเมื่อครบกำหนด — คือผลรวมขั้นต่ำที่การันตีว่าจะได้รับแน่นอนตลอดอายุสลาก ไม่รวมโอกาสถูกรางวัลใหญ่หรือรางวัลย่อยแบบสุ่ม (บรรทัดที่ 2 คือยอดนี้หารด้วยอายุสลากเป็นปี = จำนวนเงินเฉลี่ยที่ได้รับต่อปี)</p>
+    <p><span class="est-flag">[ประมาณ]</span> ชุดที่มีเครื่องหมายนี้ยังไม่มีเอกสารการันตีทางการยืนยันครบถ้วน เป็นการประมาณจากอัตรารางวัลเลขท้ายที่เผยแพร่เท่านั้น</p>
+    <p><b>ข้อยกเว้น — ถุงเงิน:</b> ชุดนี้ไม่ใช้กลไกรางวัลเลขท้าย 3/4 ตัวแบบชุดอื่น แต่สุ่มรางวัล 100,000 บาท จำนวน 900 รางวัล/เดือน จากผู้ถือสลากทั้งชุด (ไม่ผูกกับจำนวนหน่วยที่ถือโดยตรง) จึงไม่มีตัวเลข "การันตี" ที่แน่นอนเหมือนชุดอื่น และ "เงินทั้งหมดหลังครบกำหนด" ของชุดนี้จึงคำนวณจากดอกเบี้ยอย่างเดียว ไม่รวมโอกาสถูกรางวัลสุ่มดังกล่าว</p>
+    <p>ดอกเบี้ยและเงินรางวัลได้รับยกเว้นภาษีสำหรับบุคคลธรรมดาทุกชุด ตัวเลขอาจเปลี่ยนแปลงตามประกาศล่าสุดของธนาคาร แนะนำตรวจสอบที่แอป BAAC Mobile (ธ.ก.ส.) และ MyMo (ออมสิน) ก่อนตัดสินใจฝากเงินจำนวนมาก</p>
+  </footer>
+
+</div>
+
+<script>
+// ---- ข้อมูลสลากแต่ละชุด ----
+// unit = ราคาต่อหน่วย (บาท)
+// interestPerUnit = ดอกเบี้ยบาท/หน่วยเมื่อครบกำหนดอายุ
+// rate3 / rate4 = มูลค่าการันตีต่อ "รอบครบชุด" ของเลขท้าย 3 ตัว / 4 ตัว (รวมทุกครั้งที่หมุนในรอบนั้นแล้ว)
+// draws3/amt3, draws4/amt4 = (ถ้ามีข้อมูลยืนยัน) จำนวนครั้งที่หมุนรางวัลเลขท้าย 3 ตัว/4 ตัว ต่องวด และมูลค่าต่อรางวัลต่อครั้ง
+//   เช่น กระพ้อมทอง เลขท้าย 3 ตัวหมุน 2 ครั้ง ครั้งละ 125 บาท => rate3 = 2 × 125 = 250 บาท/รอบ (1,000 หน่วย)
+// cycle3=1000 หน่วย, cycle4=10000 หน่วย (มาตรฐานของสลากออมทรัพย์ไทย)
+const PRODUCTS = [
+  {
+    name: "กระพ้อมทอง", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 500, term: "2 ปี", termYears: 2, interestPct: "0.30%", interestPerUnit: 3,
+    rate3: 250, rate4: 500, draws3: 2, amt3: 125, draws4: 1, amt4: 500,
+    prize1: "เสี่ยงหมวด 20,000,000 บาท",
+    perDraw: "422,680 รางวัล รวมสูงสุด 86,320,000 บาท/เดือน",
+    estimated: false
+  },
+  {
+    name: "กระพ้อมเงิน", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 100, term: "2 ปี", termYears: 2, interestPct: "0.125%", interestPerUnit: 0.25,
+    rate3: 30, rate4: 550, draws3: 2, amt3: 15, draws4: 1, amt4: 550,
+    prize1: "เสี่ยงหมวด 10,000,000 บาท",
+    perDraw: "2,101,311 รางวัล รวมสูงสุด 109,000,000 บาท/เดือน",
+    estimated: false
+  },
+  {
+    name: "ขุนแผนมรกต", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 2000, term: "2 ปี", termYears: 2, interestPct: "0.475%", interestPerUnit: 19,
+    rate3: 400, rate4: 500, draws3: 2, amt3: 200, draws4: 1, amt4: 500,
+    prize1: "เสี่ยงหมวด 40,000,000 บาท",
+    perDraw: "105,670 รางวัล รวมสูงสุด 72,250,000 บาท/เดือน",
+    estimated: false
+  },
+  {
+    name: "ถุงเงิน", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 100, term: "3 ปี", termYears: 3, interestPct: "0.633%", interestPerUnit: 1.90,
+    rate3: 0, rate4: 0, noGuarantee: true,
+    prize1: "100,000 บาท × 900 รางวัล/เดือน",
+    perDraw: "900 รางวัล รวมสูงสุด 90,000,000 บาท/เดือน (สุ่มทั้งชุด ไม่ใช่การันตีตามเลขท้าย)",
+    estimated: false
+  },
+  {
+    name: "สลากดิจิทัล ธ.ก.ส.", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 50, term: "2 ปี", termYears: 2, interestPct: "0.070%", interestPerUnit: 0.07,
+    rate3: 10, rate4: 25, draws3: 1, amt3: 10, draws4: 1, amt4: 25,
+    prize1: "5,000,000 บาท",
+    perDraw: "รวมสูงสุด 15,917,000 บาท/เดือน",
+    estimated: false
+  },
+  {
+    name: "มังกรหยก", bank: "baac", bankLabel: "ธ.ก.ส.",
+    unit: 100, term: "2 ปี", termYears: 2, interestPct: "0.20%", interestPerUnit: 0.40,
+    rate3: 20, rate4: 600, draws3: 2, amt3: 10, draws4: 1, amt4: 600,
+    prize1: "10,000,000 บาท (สุ่มหมวด)",
+    perDraw: "ประมาณ 2,100,000 รางวัล รวมสูงสุด 96,990,000 บาท/เดือน",
+    estimated: true
+  },
+  {
+    name: "ออมสินพิเศษ 1 ปี", bank: "gsb", bankLabel: "ออมสิน",
+    unit: 100, term: "1 ปี", termYears: 1, interestPct: "~0.15%", interestPerUnit: 0.15,
+    rate3: 40, rate4: 150, draws3: 1, amt3: 40, draws4: 1, amt4: 150,
+    prize1: "10,000,000 บาท",
+    perDraw: "ไม่มีข้อมูลเปิดเผยจำนวน/มูลค่ารวมต่องวดอย่างเป็นทางการ (อัตรารางวัลเลขท้ายลดขั้นบันไดตามงวด อ้างอิงงวด 631-636 ก.ค. 2569)",
+    estimated: false
+  },
+  {
+    name: "ออมสินพิเศษ 2 ปี", bank: "gsb", bankLabel: "ออมสิน",
+    unit: 100, term: "2 ปี", termYears: 2, interestPct: "0.325%", interestPerUnit: 0.65,
+    rate3: 0, rate4: 500, draws4: 1, amt4: 500, no3Digit: true,
+    prize1: "30,000,000 บาท",
+    perDraw: "ไม่มีข้อมูลเปิดเผยจำนวน/มูลค่ารวมต่องวดอย่างเป็นทางการ (ยกเลิกรางวัลเลขท้าย 3 ตัวแล้ว เหลือเฉพาะเลขท้าย 4 ตัว อัตรารางวัลลดขั้นบันไดตามงวด อ้างอิงงวด 274-276 ก.ค. 2569)",
+    estimated: false
+  }
+];
+
+const QUICK = [100000, 500000, 1000000, 5000000, 10000000];
+
+const fmt = n => Math.round(n).toLocaleString('th-TH');
+
+function computeRow(p, principal){
+  const units = Math.floor(principal / p.unit);
+  const interestAtMaturity = units * p.interestPerUnit;
+  const cycles3 = Math.floor(units / 1000);
+  const cycles4 = Math.floor(units / 10000);
+  const guarantee = cycles3 * p.rate3 + cycles4 * p.rate4;
+  // เงินทั้งหมดหลังครบกำหนด = การันตีเลขท้าย x 12 เดือน x อายุสลาก(ปี) + ดอกเบี้ยเมื่อครบกำหนด
+  const totalAfterMaturity = (guarantee * 12 * p.termYears) + interestAtMaturity;
+  return { units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 };
+}
+
+function render(principal){
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const { units, interestAtMaturity, guarantee, totalAfterMaturity, cycles3, cycles4 } = computeRow(p, principal);
+
+    // สร้างข้อความอธิบายที่มาของ "การันตีเลขท้าย/งวด" จากจำนวนรอบครบชุด (cycles3, cycles4) x มูลค่าการันตีต่อรอบ (rate3, rate4)
+    // ถ้ามีข้อมูลจำนวนครั้งที่หมุนจริงต่องวด (draws3/amt3, draws4/amt4) จะแตกให้เห็นละเอียดขึ้นอีกชั้นว่า rate3/rate4 มาจากไหน
+    const parts = [];
+    if(cycles3 > 0 && !p.no3Digit){
+      const rateNote = p.draws3 ? ` (= ${p.draws3} ครั้ง/งวด × ${fmt(p.amt3)} บาท)` : '';
+      parts.push(`เลขท้าย 3 ตัว: ${fmt(cycles3)} รอบ × ${fmt(p.rate3)} บาท${rateNote} = ${fmt(cycles3 * p.rate3)} บาท`);
+    }
+    if(p.no3Digit) parts.push(`เลขท้าย 3 ตัว: ยกเลิกแล้ว (ปัจจุบันมีเฉพาะเลขท้าย 4 ตัว)`);
+    if(cycles4 > 0){
+      const rateNote = p.draws4 ? ` (= ${p.draws4} ครั้ง/งวด × ${fmt(p.amt4)} บาท)` : '';
+      parts.push(`เลขท้าย 4 ตัว: ${fmt(cycles4)} รอบ × ${fmt(p.rate4)} บาท${rateNote} = ${fmt(cycles4 * p.rate4)} บาท`);
+    }
+    let breakdownHtml;
+    if(p.noGuarantee){
+      breakdownHtml = `<div class="guarantee-breakdown">ชุดนี้ไม่มีกลไกรางวัลเลขท้าย 3/4 ตัว — เป็นการสุ่มรางวัลจากทั้งชุดสลาก (900 รางวัล/เดือน) จึงไม่การันตีตามจำนวนหน่วยที่ถือ</div>`;
+    } else if(parts.length){
+      breakdownHtml = `<div class="guarantee-breakdown">${parts.join('<br>')}${parts.length > 1 ? `<br><b>รวม = ${fmt(guarantee)} บาท/งวด</b>` : ''}</div>`;
+    } else {
+      breakdownHtml = `<div class="guarantee-breakdown">ยังไม่ครบ 1,000 หน่วย (1 รอบ) จึงยังไม่การันตีถูกรางวัล</div>`;
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="product">${p.name}<br><span class="bank-tag ${p.bank}">${p.bankLabel}</span></td>
+      <td class="num">${fmt(p.unit)} บาท</td>
+      <td>${p.term}</td>
+      <td class="num">${p.interestPct}</td>
+      <td class="num computed">${fmt(units)} หน่วย</td>
+      <td class="num computed">${fmt(interestAtMaturity)} บาท</td>
+      <td class="num computed guarantee">${p.noGuarantee ? 'ไม่มี (สุ่มทั้งชุด)' : fmt(guarantee) + ' บาท'}${p.estimated ? '<br><span class="est-flag">[ประมาณ]</span>' : ''}</td>
+      <td class="muted-note">${breakdownHtml}<hr class="prize-sep">${p.perDraw}</td>
+      <td class="num computed total">${fmt(totalAfterMaturity)} บาท<br><span class="per-year">≈ ${fmt(totalAfterMaturity / p.termYears)} บาท/ปี</span></td>
+      <td>${p.prize1}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderQuickButtons(){
+  const wrap = document.getElementById('quickAmounts');
+  wrap.innerHTML = '';
+  QUICK.forEach(v => {
+    const btn = document.createElement('button');
+    btn.textContent = fmt(v) + ' บาท';
+    btn.addEventListener('click', () => setPrincipal(v));
+    btn.dataset.value = v;
+    wrap.appendChild(btn);
+  });
+}
+
+function updateActiveQuick(principal){
+  document.querySelectorAll('#quickAmounts button').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.value) === principal);
+  });
+}
+
+function setPrincipal(value){
+  value = Math.max(100, Math.round(value));
+  document.getElementById('principalInput').value = fmt(value);
+  document.getElementById('principalRange').value = Math.min(value, 20000000);
+  document.getElementById('principalReadout').textContent = fmt(value);
+  updateActiveQuick(value);
+  render(value);
+}
+
+document.getElementById('principalInput').addEventListener('input', (e) => {
+  const raw = e.target.value.replace(/[^0-9]/g, '');
+  if(raw === '') return;
+  const value = parseInt(raw, 10);
+  document.getElementById('principalRange').value = Math.min(value, 20000000);
+  document.getElementById('principalReadout').textContent = fmt(value);
+  updateActiveQuick(value);
+  render(value);
+});
+document.getElementById('principalInput').addEventListener('blur', (e) => {
+  const raw = e.target.value.replace(/[^0-9]/g, '') || '0';
+  setPrincipal(parseInt(raw, 10));
+});
+
+document.getElementById('principalRange').addEventListener('input', (e) => {
+  setPrincipal(Number(e.target.value));
+});
+
+renderQuickButtons();
+setPrincipal(5000000);
+</script>
+</body>
+</html>
