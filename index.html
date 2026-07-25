@@ -336,33 +336,70 @@
   thead th.manage-col{
     background:var(--deep-green);
   }
-  .row-actions{
+  .row-menu{
+    position:relative;
     display:flex;
-    flex-direction:column;
-    gap:5px;
-    align-items:stretch;
+    justify-content:center;
   }
-  .row-actions button{
+  .menu-btn{
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:4px;
+    width:30px;
+    height:26px;
     font-family:'Space Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.02em;
+    font-size:16px;
+    line-height:1;
     background:var(--card);
     border:1px solid var(--ledger-line);
     color:var(--muted);
-    padding:4px 6px;
     border-radius:3px;
     cursor:pointer;
     transition:all .15s ease;
   }
-  .row-actions button .btn-icon{font-size:11px; line-height:1;}
-  .row-actions button.edit-row-btn{border-color:var(--green); color:var(--green);}
-  .row-actions button.edit-row-btn:hover{background:var(--green); color:var(--paper); box-shadow:0 2px 6px -2px rgba(31,82,50,0.5);}
-  .row-actions button.delete-row-btn{border-color:var(--stamp-red); color:var(--stamp-red);}
-  .row-actions button.delete-row-btn:hover{background:var(--stamp-red); color:var(--paper); box-shadow:0 2px 6px -2px rgba(155,59,44,0.5);}
+  .menu-btn:hover, .menu-btn[aria-expanded="true"]{
+    border-color:var(--green);
+    color:var(--green);
+    background:rgba(31,82,50,0.08);
+  }
+  .row-popover{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    position:absolute;
+    top:calc(100% + 4px);
+    right:0;
+    min-width:104px;
+    background:var(--card);
+    border:1px solid var(--deep-green);
+    border-radius:4px;
+    box-shadow:0 4px 14px -4px rgba(0,0,0,0.35);
+    padding:5px;
+    z-index:20;
+  }
+  .row-popover.open{ display:flex; }
+  .row-popover button{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:6px;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.02em;
+    background:transparent;
+    border:1px solid transparent;
+    color:var(--muted);
+    padding:6px 8px;
+    border-radius:3px;
+    cursor:pointer;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .row-popover button .btn-icon{font-size:11px; line-height:1;}
+  .row-popover button.edit-row-btn{color:var(--green);}
+  .row-popover button.edit-row-btn:hover{background:var(--green); color:var(--paper);}
+  .row-popover button.delete-row-btn{color:var(--stamp-red);}
+  .row-popover button.delete-row-btn:hover{background:var(--stamp-red); color:var(--paper);}
   .last-modified{
     margin-top:6px;
     font-size:9.5px;
@@ -908,13 +945,16 @@ function render(principal){
       <td class="num computed total">${fmt(totalAfterMaturity)} บาท<br><span class="per-year">≈ ${fmt(totalAfterMaturity / eff.termYears)} บาท/ปี</span></td>
       <td class="prize1-cell">${eff.prize1}</td>
       <td class="manage-col no-print">
-        <div class="row-actions">
-          <button type="button" class="edit-row-btn" data-edit-product="${eff.name}" title="แก้ไขข้อมูลชุดนี้">
-            <span class="btn-icon">✎</span><span class="btn-label">แก้ไข</span>
-          </button>
-          <button type="button" class="delete-row-btn" data-delete-product="${eff.name}" title="ลบชุดนี้">
-            <span class="btn-icon">🗑</span><span class="btn-label">ลบ</span>
-          </button>
+        <div class="row-menu">
+          <button type="button" class="menu-btn" data-menu-toggle="${eff.name}" title="ตัวเลือก" aria-haspopup="true" aria-expanded="false">⋮</button>
+          <div class="row-popover">
+            <button type="button" class="popover-item edit-row-btn" data-edit-product="${eff.name}">
+              <span class="btn-icon">✎</span><span class="btn-label">แก้ไข</span>
+            </button>
+            <button type="button" class="popover-item delete-row-btn" data-delete-product="${eff.name}">
+              <span class="btn-icon">🗑</span><span class="btn-label">ลบ</span>
+            </button>
+          </div>
         </div>
         ${eff.lastModified ? `<div class="last-modified">แก้ไขล่าสุด: ${fmtDateTime(eff.lastModified)}</div>` : ''}
       </td>
@@ -1088,11 +1128,29 @@ productForm.addEventListener('submit', (e) => {
   render(currentPrincipal);
 });
 
+function closeAllRowPopovers(){
+  document.querySelectorAll('.row-popover.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.menu-btn[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+
 document.getElementById('tableBody').addEventListener('click', (e) => {
+  const menuBtn = e.target.closest('[data-menu-toggle]');
+  if(menuBtn){
+    const popover = menuBtn.nextElementSibling;
+    const willOpen = !popover.classList.contains('open');
+    closeAllRowPopovers();
+    if(willOpen){
+      popover.classList.add('open');
+      menuBtn.setAttribute('aria-expanded', 'true');
+    }
+    return;
+  }
+
   const editBtn = e.target.closest('[data-edit-product]');
-  if(editBtn){ openModalForEdit(editBtn.dataset.editProduct); return; }
+  if(editBtn){ closeAllRowPopovers(); openModalForEdit(editBtn.dataset.editProduct); return; }
   const delBtn = e.target.closest('[data-delete-product]');
   if(delBtn){
+    closeAllRowPopovers();
     const name = delBtn.dataset.deleteProduct;
     if(confirm(`ลบชุดสลาก "${name}" ออกจากตารางนี้?`)){
       products = products.filter(p => p.name !== name);
@@ -1102,6 +1160,10 @@ document.getElementById('tableBody').addEventListener('click', (e) => {
       render(currentPrincipal);
     }
   }
+});
+
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.row-menu')) closeAllRowPopovers();
 });
 
 </script>
