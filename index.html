@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>เปรียบเทียบสลากออมทรัพย์ ธ.ก.ส. และออมสิน 2569</title>
+<title>เปรียบเทียบสลากออมทรัพย์</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;600;700&family=Sarabun:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
@@ -73,17 +73,13 @@
     line-height:1.7;
     margin:0;
   }
-  .stamp{
-    position:absolute; top:28px; right:28px;
-    border:2px solid var(--stamp-red);
-    color:var(--stamp-red);
-    font-family:'Space Mono', monospace;
-    font-size:13px;
-    letter-spacing:0.08em;
-    padding:6px 10px;
-    transform:rotate(6deg);
-    opacity:0.85;
-    border-radius:2px;
+  .header-actions{
+    position:absolute; top:24px; right:24px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:10px;
+    z-index:2;
   }
 
   .control-panel{
@@ -177,6 +173,10 @@
     background:var(--gold);
     border-color:var(--gold);
   }
+  .header-export-btn{
+    font-size:13px;
+    padding:10px 16px;
+  }
 
   .print-header{display:none;}
 
@@ -202,7 +202,9 @@
     padding:16px 16px;
     position:sticky;
     top:0;
+    border-right:1px solid rgba(246,241,228,0.18);
   }
+  thead th:last-child{border-right:none;}
   thead th.num{text-align:center;}
   thead th.sortable{
     cursor:pointer;
@@ -220,9 +222,11 @@
     padding:16px;
     font-size:18px;
     border-bottom:1px solid var(--ledger-line);
+    border-right:1px solid var(--ledger-line);
     vertical-align:top;
     text-align:center;
   }
+  tbody td:last-child{border-right:none;}
   tbody tr:nth-child(even){background:rgba(184,134,44,0.045);}
   tbody tr:hover{background:rgba(31,82,50,0.06);}
   td.num{
@@ -252,7 +256,7 @@
     font-weight:700;
     color:var(--deep-green);
   }
-  .computed.guarantee{color:var(--stamp-red);}
+  .computed.guarantee{color:var(--stamp-red); min-width:230px; white-space:normal;}
   .computed.total{color:var(--gold-bright); background:rgba(184,134,44,0.12); font-size:20px;}
   .per-year{
     display:inline-block;
@@ -263,12 +267,27 @@
     color:var(--muted);
     background:none;
   }
-  .muted-note{font-size:16px; color:var(--muted); min-width:230px;}
+  .guarantee-amount{
+    font-size:19px;
+  }
+  .calc-from-label{
+    margin-top:9px;
+    padding-top:8px;
+    border-top:1px dashed var(--ledger-line);
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--gold);
+    text-align:left;
+  }
   .guarantee-breakdown{
     font-family:'Space Mono', monospace;
     font-size:14.5px;
     line-height:1.75;
     color:var(--green);
+    text-align:left;
+    margin-top:4px;
   }
   .guarantee-breakdown b{color:var(--stamp-red);}
   hr.prize-sep{
@@ -276,70 +295,160 @@
     border-top:1px dashed var(--ledger-line);
     margin:8px 0;
   }
+  .per-draw-text{
+    display:block;
+    text-align:left;
+    line-height:1.65;
+    font-size:15px;
+    font-weight:400;
+    color:var(--muted);
+  }
   .est-flag{
     font-family:'Space Mono', monospace;
     font-size:13px;
     color:var(--gold);
   }
 
-  .edit-fields{
-    display:none;
-    margin-top:6px;
-    padding-top:6px;
-    border-top:1px dashed var(--ledger-line);
-    font-family:'Space Mono', monospace;
-    font-size:12px;
-    color:var(--green);
-    line-height:1.9;
-    text-align:left;
+  .table-toolbar{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:12px;
   }
-  .edit-fields.open{display:block;}
-  .edit-fields .edit-row{white-space:nowrap;}
-  .edit-toggle{
-    display:inline-block;
-    cursor:pointer;
-    margin-left:5px;
-    color:var(--gold);
-    font-size:13px;
-    user-select:none;
-    transition:color .15s ease;
-  }
-  .edit-toggle:hover{color:var(--stamp-red);}
-  .edit-toggle.active{color:var(--stamp-red);}
-  .mini-input{
+
+  .add-btn{
     font-family:'Space Mono', monospace;
-    font-size:12px;
-    color:var(--stamp-red);
-    background:#fffefb;
-    border:none;
-    border-bottom:1.5px solid var(--gold);
-    width:4.5em;
-    text-align:center;
-    padding:1px 2px;
-  }
-  .mini-input:focus{outline:none; border-bottom-color:var(--stamp-red);}
-  .mini-input.wide{width:6em;}
-  .stamp[contenteditable="true"]{cursor:text;}
-  .stamp[contenteditable="true"]:hover{background:rgba(155,59,44,0.06);}
-  .reset-btn{
-    font-family:'Space Mono', monospace;
-    font-size:13px;
-    background:transparent;
-    border:1px solid var(--stamp-red);
-    color:var(--stamp-red);
-    padding:12px 16px;
+    font-size:14px;
+    background:var(--green);
+    color:var(--paper);
+    border:1px solid var(--green);
+    padding:13px 18px;
     cursor:pointer;
     white-space:nowrap;
     transition:all .15s ease;
   }
-  .reset-btn:hover{background:var(--stamp-red); color:var(--paper);}
+  .add-btn:hover{background:var(--deep-green); border-color:var(--deep-green);}
 
-  .print-date{
+  td.manage-col{
+    min-width:82px;
+    vertical-align:top;
+    padding-top:14px;
+  }
+  thead th.manage-col{
+    background:var(--deep-green);
+  }
+  .row-actions{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    align-items:stretch;
+  }
+  .row-actions button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
     font-family:'Space Mono', monospace;
     font-size:11px;
+    letter-spacing:0.02em;
+    background:var(--card);
+    border:1px solid var(--ledger-line);
     color:var(--muted);
-    margin-top:1mm;
+    padding:4px 6px;
+    border-radius:3px;
+    cursor:pointer;
+    transition:all .15s ease;
   }
+  .row-actions button .btn-icon{font-size:11px; line-height:1;}
+  .row-actions button.edit-row-btn{border-color:var(--green); color:var(--green);}
+  .row-actions button.edit-row-btn:hover{background:var(--green); color:var(--paper); box-shadow:0 2px 6px -2px rgba(31,82,50,0.5);}
+  .row-actions button.delete-row-btn{border-color:var(--stamp-red); color:var(--stamp-red);}
+  .row-actions button.delete-row-btn:hover{background:var(--stamp-red); color:var(--paper); box-shadow:0 2px 6px -2px rgba(155,59,44,0.5);}
+  .last-modified{
+    margin-top:6px;
+    font-size:9.5px;
+    line-height:1.3;
+    color:var(--muted);
+    text-align:center;
+    opacity:0.75;
+  }
+
+  .modal-backdrop{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(20,54,31,0.45);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal-box{
+    background:var(--card);
+    border:1px solid var(--deep-green);
+    max-width:640px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:28px 30px;
+    box-shadow:0 12px 40px -12px rgba(20,54,31,0.5);
+  }
+  .modal-box h2{
+    font-family:'Noto Serif Thai', serif;
+    color:var(--deep-green);
+    font-size:22px;
+    margin:0 0 18px;
+  }
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 16px;
+  }
+  .form-grid .full{grid-column:1 / -1;}
+  .form-field label{
+    display:block;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--green);
+    margin-bottom:5px;
+  }
+  .form-field input[type="text"],
+  .form-field input[type="number"],
+  .form-field select,
+  .form-field textarea{
+    width:100%;
+    font-family:'Sarabun', sans-serif;
+    font-size:15px;
+    padding:8px 10px;
+    border:1.5px solid var(--ledger-line);
+    background:#fffefb;
+    color:var(--ink);
+  }
+  .form-field textarea{resize:vertical; min-height:52px;}
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus{outline:none; border-color:var(--gold);}
+  .form-field.checkbox-field{display:flex; align-items:center; gap:8px; margin-top:4px;}
+  .form-field.checkbox-field label{margin:0; text-transform:none; font-family:'Sarabun',sans-serif; font-size:15px; letter-spacing:0;}
+  .form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+    padding-top:16px;
+    border-top:1px dashed var(--ledger-line);
+  }
+  .form-actions button{
+    font-family:'Space Mono', monospace;
+    font-size:14px;
+    padding:11px 20px;
+    cursor:pointer;
+    border:1px solid var(--deep-green);
+  }
+  .form-actions .save-btn{background:var(--deep-green); color:var(--paper);}
+  .form-actions .save-btn:hover{background:var(--gold); border-color:var(--gold);}
+  .form-actions .cancel-btn{background:transparent; color:var(--deep-green);}
+  .form-actions .cancel-btn:hover{background:rgba(31,82,50,0.08);}
+  .modal-hint{font-size:13px; color:var(--muted); margin:-10px 0 16px; line-height:1.6;}
 
   footer.notes{
     margin-top:24px;
@@ -353,7 +462,7 @@
 
   @media (max-width: 640px){
     header.hero{padding:26px 20px;}
-    .stamp{position:static; display:inline-block; margin-top:14px; transform:none;}
+    .header-actions{position:static; flex-direction:row; flex-wrap:wrap; align-items:center; margin-top:14px; justify-content:flex-start;}
     .control-panel{padding:18px;}
   }
 
@@ -409,10 +518,9 @@
     thead th:nth-child(4){width:6%;}
     thead th:nth-child(5){width:7%;}
     thead th:nth-child(6){width:8%;}
-    thead th:nth-child(7){width:8%;}
-    thead th:nth-child(8){width:20%;}
-    thead th:nth-child(9){width:11%;}
-    thead th:nth-child(10){width:19%;}
+    thead th:nth-child(7){width:35%;}
+    thead th:nth-child(8){width:11%;}
+    thead th:nth-child(9){width:12%;}
     thead th{
       font-size:16px;
       letter-spacing:0;
@@ -421,11 +529,11 @@
       line-height:1.3;
       word-break:break-word;
     }
-    thead th:nth-child(8), thead th:nth-child(10){
+    thead th:nth-child(9){
       font-size:10.5px;
     }
     .sort-arrow{ display:none !important; }
-    .no-print, .edit-fields, .reset-btn{ display:none !important; }
+    .no-print{ display:none !important; }
     tbody td{
       font-size:16px;
       padding:7px 3px;
@@ -439,8 +547,11 @@
     .computed.total{ font-size:16.5px; color:#7a4f14 !important; font-weight:700; background:none !important; }
     .per-year{ font-size:12.5px; margin-top:2px; color:#7a4f14 !important; }
     /* รางวัลต่องวด และ รางวัลที่ 1 คงขนาดฟอนต์เดิม ไม่ขยายตอน print pdf */
-    .guarantee-breakdown{ font-size:9.5px; line-height:1.4; }
-    .muted-note{ font-size:9.5px; min-width:0; }
+    .guarantee-amount{ font-size:14px; }
+    .calc-from-label{ font-size:8.5px; margin-top:5px; padding-top:4px; }
+    .guarantee-breakdown{ font-size:9.5px; line-height:1.4; margin-top:5px; }
+    .per-draw-text{ font-size:9.5px; }
+    .computed.guarantee{ min-width:0; }
     .prize1-cell{ font-size:10.5px; }
     .est-flag{ font-size:10.5px; }
     hr.prize-sep{ margin:4px 0; }
@@ -453,10 +564,12 @@
 <div class="wrap">
 
   <header class="hero">
-    <p class="eyebrow">Savings Lottery Bonds · ปีงบประมาณ 2569</p>
-    <h1>เปรียบเทียบสลากออมทรัพย์<br>ธ.ก.ส. &amp; ออมสิน</h1>
+    <div class="header-actions">
+      <button id="exportPdfBtn" class="export-pdf-btn header-export-btn" type="button">⬇ Export PDF (A4 แนวนอน)</button>
+    </div>
+    <p class="eyebrow">Savings Lottery Bonds</p>
+    <h1>เปรียบเทียบสลากออมทรัพย์</h1>
     <p class="sub">ปรับ "เงินต้น" ด้านล่าง เพื่อคำนวณจำนวนหน่วย ดอกเบี้ยเมื่อครบกำหนด และการันตีรางวัลเลขท้ายขั้นต่ำต่องวด ของสลากแต่ละชุดโดยอัตโนมัติ</p>
-    <div class="stamp" id="dateStamp" contenteditable="true" spellcheck="false" title="คลิกเพื่อแก้ไขวันที่ข้อมูล">ข้อมูล ณ ก.ค. 2569</div>
   </header>
 
   <section class="control-panel">
@@ -475,18 +588,15 @@
     <div class="field" style="flex:0 0 auto;">
       <div class="principal-readout">คำนวณจาก <b id="principalReadout">5,000,000</b> บาท</div>
     </div>
-    <div class="field" style="flex:0 0 auto;">
-      <button id="exportPdfBtn" class="export-pdf-btn" type="button">⬇ Export PDF (A4 แนวนอน)</button>
-    </div>
-    <div class="field no-print" style="flex:0 0 auto;">
-      <button id="resetOverridesBtn" class="reset-btn" type="button" title="ล้างค่าดอกเบี้ย/รางวัลต่องวดที่แก้ไขไว้ กลับเป็นค่าเริ่มต้น">↺ รีเซ็ตค่าที่แก้ไข</button>
-    </div>
   </section>
 
   <div class="print-header">
-    <div class="print-title">เปรียบเทียบสลากออมทรัพย์ ธ.ก.ส. &amp; ออมสิน</div>
+    <div class="print-title">เปรียบเทียบสลากออมทรัพย์</div>
     <div class="print-principal">คำนวณจาก <b id="printPrincipalReadout">5,000,000</b> บาท</div>
-    <div class="print-date" id="printDateStamp">ข้อมูล ณ ก.ค. 2569</div>
+  </div>
+
+  <div class="table-toolbar no-print">
+    <button id="addProductBtn" class="add-btn" type="button">+ เพิ่มชุดสลาก</button>
   </div>
 
   <div class="table-card">
@@ -500,9 +610,9 @@
           <th class="num">จำนวนหน่วย</th>
           <th class="num">ดอกเบี้ยครบกำหนด</th>
           <th class="num">การันตีเลขท้าย/งวด</th>
-          <th>รางวัลต่องวด</th>
           <th class="num sortable" id="sortTotalHeader" title="คลิกเพื่อสลับเรียงลำดับ">เงินทั้งหมดหลังครบกำหนด<span class="sort-arrow" id="sortArrow">▼</span></th>
           <th>รางวัลที่ 1</th>
+          <th class="no-print manage-col">จัดการ</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -518,6 +628,85 @@
 
 </div>
 
+<div class="modal-backdrop no-print" id="productModal">
+  <div class="modal-box">
+    <h2 id="modalTitle">เพิ่มชุดสลากใหม่</h2>
+    <p class="modal-hint">กรอกข้อมูลชุดสลาก ค่าที่คำนวณอัตโนมัติ (จำนวนหน่วย / ดอกเบี้ยครบกำหนด / การันตี / เงินรวม) จะอัปเดตให้ทันทีในตาราง</p>
+    <form id="productForm">
+      <input type="hidden" id="f_originalName">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label for="f_name">ชื่อชุดสลาก *</label>
+          <input type="text" id="f_name" required>
+        </div>
+        <div class="form-field">
+          <label for="f_bank">ธนาคาร</label>
+          <select id="f_bank">
+            <option value="baac">ธ.ก.ส.</option>
+            <option value="gsb">ออมสิน</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="f_unit">ราคา/หน่วย (บาท) *</label>
+          <input type="number" id="f_unit" min="1" step="1" required>
+        </div>
+        <div class="form-field">
+          <label for="f_term">อายุสลาก (ข้อความแสดงผล เช่น "2 ปี")</label>
+          <input type="text" id="f_term" placeholder="เช่น 2 ปี">
+        </div>
+        <div class="form-field">
+          <label for="f_termYears">อายุสลาก (ปี, ตัวเลข) *</label>
+          <input type="number" id="f_termYears" min="0.5" step="0.5" required>
+        </div>
+        <div class="form-field">
+          <label for="f_interestPct">ดอกเบี้ย/ปี (ข้อความแสดงผล เช่น "0.30%")</label>
+          <input type="text" id="f_interestPct" placeholder="เช่น 0.30%">
+        </div>
+        <div class="form-field">
+          <label for="f_interestPerUnit">ดอกเบี้ยบาท/หน่วยเมื่อครบกำหนด *</label>
+          <input type="number" id="f_interestPerUnit" min="0" step="0.01" required>
+        </div>
+        <div class="form-field full">
+          <label for="f_prize1">รางวัลที่ 1</label>
+          <input type="text" id="f_prize1" placeholder="เช่น 10,000,000 บาท">
+        </div>
+        <div class="form-field checkbox-field full">
+          <input type="checkbox" id="f_estimated">
+          <label for="f_estimated">เป็นค่าประมาณ (ยังไม่มีเอกสารยืนยันครบถ้วน)</label>
+        </div>
+        <div class="form-field checkbox-field full">
+          <input type="checkbox" id="f_noGuarantee">
+          <label for="f_noGuarantee">ไม่มีกลไกการันตีเลขท้าย 3/4 ตัว (สุ่มรางวัลทั้งชุดแบบ "ถุงเงิน")</label>
+        </div>
+        <div class="form-field checkbox-field full">
+          <input type="checkbox" id="f_no3Digit">
+          <label for="f_no3Digit">ไม่มี/ยกเลิกรางวัลเลขท้าย 3 ตัว (มีเฉพาะ 4 ตัว)</label>
+        </div>
+        <div class="form-field">
+          <label for="f_draws3">เลขท้าย 3 ตัว: จำนวนครั้ง/งวด</label>
+          <input type="number" id="f_draws3" min="0" step="1">
+        </div>
+        <div class="form-field">
+          <label for="f_amt3">เลขท้าย 3 ตัว: บาท/รางวัล/ครั้ง</label>
+          <input type="number" id="f_amt3" min="0" step="1">
+        </div>
+        <div class="form-field">
+          <label for="f_draws4">เลขท้าย 4 ตัว: จำนวนครั้ง/งวด</label>
+          <input type="number" id="f_draws4" min="0" step="1">
+        </div>
+        <div class="form-field">
+          <label for="f_amt4">เลขท้าย 4 ตัว: บาท/รางวัล/ครั้ง</label>
+          <input type="number" id="f_amt4" min="0" step="1">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" id="modalCancelBtn">ยกเลิก</button>
+        <button type="submit" class="save-btn" id="modalSaveBtn">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 // ---- ข้อมูลสลากแต่ละชุด ----
 // unit = ราคาต่อหน่วย (บาท)
@@ -526,7 +715,7 @@
 // draws3/amt3, draws4/amt4 = (ถ้ามีข้อมูลยืนยัน) จำนวนครั้งที่หมุนรางวัลเลขท้าย 3 ตัว/4 ตัว ต่องวด และมูลค่าต่อรางวัลต่อครั้ง
 //   เช่น กระพ้อมทอง เลขท้าย 3 ตัวหมุน 2 ครั้ง ครั้งละ 125 บาท => rate3 = 2 × 125 = 250 บาท/รอบ (1,000 หน่วย)
 // cycle3=1000 หน่วย, cycle4=10000 หน่วย (มาตรฐานของสลากออมทรัพย์ไทย)
-const PRODUCTS = [
+const DEFAULT_PRODUCTS = [
   {
     name: "กระพ้อมทอง", bank: "baac", bankLabel: "ธ.ก.ส.",
     unit: 500, term: "2 ปี", termYears: 2, interestPct: "0.30%", interestPerUnit: 3,
@@ -596,6 +785,13 @@ const PRODUCTS = [
 const QUICK = [100000, 500000, 1000000, 5000000, 10000000];
 
 const fmt = n => Math.round(n).toLocaleString('th-TH');
+const fmtDateTime = iso => {
+  if(!iso) return '';
+  const d = new Date(iso);
+  const datePart = d.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const timePart = d.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', hour12:false });
+  return `${datePart} ${timePart} น.`;
+};
 
 function computeRow(p, principal){
   const units = Math.floor(principal / p.unit);
@@ -614,13 +810,23 @@ let sortDirection = 'desc'; // 'desc' = มากไปน้อย (บรร�
 // ---- ค่าที่ผู้ใช้แก้ไขเอง (ดอกเบี้ย / รางวัลต่องวดเลขท้าย) เก็บแยกจากข้อมูลตั้งต้น ----
 // เก็บใน localStorage เพื่อให้แก้ทีเดียวแล้วใช้ได้ทุกครั้งที่เปิดไฟล์นี้ จนกว่าจะกด "รีเซ็ตค่าที่แก้ไข"
 const OVERRIDES_KEY = 'lotteryCompareOverridesV1';
-const DATE_KEY = 'lotteryCompareDateStampV1';
+const PRODUCTS_KEY = 'lotteryCompareProductsV1';
 
 let overrides = {};
 try{ overrides = JSON.parse(localStorage.getItem(OVERRIDES_KEY)) || {}; }catch(e){ overrides = {}; }
 
-// เก็บว่าช่องแก้ไข (ต่อชุด ต่อประเภท) ไหนถูกเปิดไว้อยู่ ณ ตอนนี้ — เปิดเมื่อคลิกไอคอน ✎ เท่านั้น
-let openPanels = new Set();
+// ---- รายการชุดสลาก (เพิ่ม/แก้ไข/ลบได้) เก็บใน localStorage แยกจาก DEFAULT_PRODUCTS ตั้งต้น ----
+let products = [];
+try{
+  const savedProducts = JSON.parse(localStorage.getItem(PRODUCTS_KEY));
+  products = Array.isArray(savedProducts) ? savedProducts : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+}catch(e){
+  products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+}
+
+function saveProducts(){
+  try{ localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); }catch(e){}
+}
 
 function saveOverrides(){
   try{ localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides)); }catch(e){}
@@ -643,7 +849,7 @@ function getEffective(p){
 }
 
 function getSortedRows(principal){
-  const rows = PRODUCTS.map(p => {
+  const rows = products.map(p => {
     const eff = getEffective(p);
     return { p, eff, ...computeRow(eff, principal) };
   });
@@ -681,28 +887,9 @@ function render(principal){
     if(eff.noGuarantee){
       breakdownHtml = `<div class="guarantee-breakdown">ชุดนี้ไม่มีกลไกรางวัลเลขท้าย 3/4 ตัว — เป็นการสุ่มรางวัลจากทั้งชุดสลาก (900 รางวัล/เดือน) จึงไม่การันตีตามจำนวนหน่วยที่ถือ</div>`;
     } else if(parts.length){
-      breakdownHtml = `<div class="guarantee-breakdown">${parts.join('<br>')}${parts.length > 1 ? `<br><b>รวม = ${fmt(guarantee)} บาท/งวด</b>` : ''}</div>`;
+      breakdownHtml = `<div class="guarantee-breakdown">${parts.join('<br>')}</div>`;
     } else {
       breakdownHtml = `<div class="guarantee-breakdown">ยังไม่ครบ 1,000 หน่วย (1 รอบ) จึงยังไม่การันตีถูกรางวัล</div>`;
-    }
-
-    // ช่องแก้ไข "ดอกเบี้ย" (interestPerUnit) — ใช้คำนวณ ดอกเบี้ยครบกำหนด และ เงินทั้งหมดหลังครบกำหนด
-    const interestKey = `${eff.name}::interest`;
-    const interestOpen = openPanels.has(interestKey);
-    const interestEditHtml = `
-      <span class="edit-toggle no-print${interestOpen ? ' active' : ''}" data-toggle="${interestKey}" title="แก้ไขดอกเบี้ย">✎</span>
-      <div class="edit-fields no-print${interestOpen ? ' open' : ''}">
-        <div class="edit-row">ดบ. <input type="number" step="0.01" class="mini-input" data-name="${eff.name}" data-field="interestPerUnit" value="${eff.interestPerUnit}"> บาท/หน่วย</div>
-      </div>`;
-
-    // ช่องแก้ไข "รางวัลต่องวดเลขท้าย" (จำนวนครั้งที่หมุน x มูลค่าต่อรางวัล ต่องวด) — ไม่แสดงถ้าชุดนี้ไม่มีกลไกการันตี
-    let guaranteeEditHtml = '';
-    if(!eff.noGuarantee){
-      const guaranteeKey = `${eff.name}::guarantee`;
-      const guaranteeOpen = openPanels.has(guaranteeKey);
-      const row3 = !eff.no3Digit ? `<div class="edit-row">3 ตัว: <input type="number" class="mini-input" data-name="${eff.name}" data-field="draws3" value="${eff.draws3 ?? 0}"> ครั้ง × <input type="number" class="mini-input" data-name="${eff.name}" data-field="amt3" value="${eff.amt3 ?? 0}"> บาท</div>` : '';
-      const row4 = `<div class="edit-row">4 ตัว: <input type="number" class="mini-input" data-name="${eff.name}" data-field="draws4" value="${eff.draws4 ?? 0}"> ครั้ง × <input type="number" class="mini-input" data-name="${eff.name}" data-field="amt4" value="${eff.amt4 ?? 0}"> บาท</div>`;
-      guaranteeEditHtml = `<span class="edit-toggle no-print${guaranteeOpen ? ' active' : ''}" data-toggle="${guaranteeKey}" title="แก้ไขรางวัลต่องวดเลขท้าย">✎</span><div class="edit-fields no-print${guaranteeOpen ? ' open' : ''}">${row3}${row4}</div>`;
     }
 
     const tr = document.createElement('tr');
@@ -710,13 +897,27 @@ function render(principal){
       <td class="product">${eff.name}<br><span class="bank-tag ${eff.bank}">${eff.bankLabel}</span></td>
       <td class="num">${fmt(eff.unit)} บาท</td>
       <td>${eff.term}</td>
-      <td class="num">${eff.interestPct}${interestEditHtml}</td>
+      <td class="num">${eff.interestPct}</td>
       <td class="num computed">${fmt(units)} หน่วย</td>
       <td class="num computed">${fmt(interestAtMaturity)} บาท</td>
-      <td class="num computed guarantee">${eff.noGuarantee ? 'ไม่มี (สุ่มทั้งชุด)' : fmt(guarantee) + ' บาท'}${eff.estimated ? '<br><span class="est-flag">[ประมาณ]</span>' : ''}${guaranteeEditHtml}</td>
-      <td class="muted-note">${breakdownHtml}<hr class="prize-sep">${eff.perDraw}</td>
+      <td class="num computed guarantee">
+        <div class="guarantee-amount">${eff.noGuarantee ? 'ไม่มี (สุ่มทั้งชุด)' : fmt(guarantee) + ' บาท'}${eff.estimated ? ' <span class="est-flag">[ประมาณ]</span>' : ''}</div>
+        <div class="calc-from-label">คำนวณจาก</div>
+        ${breakdownHtml}
+      </td>
       <td class="num computed total">${fmt(totalAfterMaturity)} บาท<br><span class="per-year">≈ ${fmt(totalAfterMaturity / eff.termYears)} บาท/ปี</span></td>
       <td class="prize1-cell">${eff.prize1}</td>
+      <td class="manage-col no-print">
+        <div class="row-actions">
+          <button type="button" class="edit-row-btn" data-edit-product="${eff.name}" title="แก้ไขข้อมูลชุดนี้">
+            <span class="btn-icon">✎</span><span class="btn-label">แก้ไข</span>
+          </button>
+          <button type="button" class="delete-row-btn" data-delete-product="${eff.name}" title="ลบชุดนี้">
+            <span class="btn-icon">🗑</span><span class="btn-label">ลบ</span>
+          </button>
+        </div>
+        ${eff.lastModified ? `<div class="last-modified">แก้ไขล่าสุด: ${fmtDateTime(eff.lastModified)}</div>` : ''}
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -780,53 +981,127 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
   window.print();
 });
 
-// ---- แก้ไขค่าดอกเบี้ย / รางวัลต่องวดเลขท้าย รายชุด ----
+// ---- เพิ่ม / แก้ไข / ลบ ชุดสลาก (แถวในตาราง) ----
+const productModal = document.getElementById('productModal');
+const productForm = document.getElementById('productForm');
+const modalTitle = document.getElementById('modalTitle');
+
+function openModalForAdd(){
+  modalTitle.textContent = 'เพิ่มชุดสลากใหม่';
+  productForm.reset();
+  document.getElementById('f_originalName').value = '';
+  document.getElementById('f_bank').value = 'baac';
+  productModal.classList.add('open');
+  document.getElementById('f_name').focus();
+}
+
+function openModalForEdit(name){
+  const p = products.find(x => x.name === name);
+  if(!p) return;
+  modalTitle.textContent = 'แก้ไขข้อมูลชุดสลาก';
+  document.getElementById('f_originalName').value = p.name;
+  document.getElementById('f_name').value = p.name;
+  document.getElementById('f_bank').value = p.bank || 'baac';
+  document.getElementById('f_unit').value = p.unit ?? '';
+  document.getElementById('f_term').value = p.term ?? '';
+  document.getElementById('f_termYears').value = p.termYears ?? '';
+  document.getElementById('f_interestPct').value = p.interestPct ?? '';
+  document.getElementById('f_interestPerUnit').value = p.interestPerUnit ?? '';
+  document.getElementById('f_prize1').value = p.prize1 ?? '';
+  document.getElementById('f_estimated').checked = !!p.estimated;
+  document.getElementById('f_noGuarantee').checked = !!p.noGuarantee;
+  document.getElementById('f_no3Digit').checked = !!p.no3Digit;
+  document.getElementById('f_draws3').value = p.draws3 ?? '';
+  document.getElementById('f_amt3').value = p.amt3 ?? '';
+  document.getElementById('f_draws4').value = p.draws4 ?? '';
+  document.getElementById('f_amt4').value = p.amt4 ?? '';
+  productModal.classList.add('open');
+  document.getElementById('f_name').focus();
+}
+
+function closeModal(){
+  productModal.classList.remove('open');
+}
+
+document.getElementById('addProductBtn').addEventListener('click', openModalForAdd);
+document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+productModal.addEventListener('click', (e) => { if(e.target === productModal) closeModal(); });
+
+productForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const originalName = document.getElementById('f_originalName').value;
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){ return; }
+
+  // กันชื่อซ้ำ (ยกเว้นกรณีแก้ไขชุดเดิมโดยไม่เปลี่ยนชื่อ)
+  const nameTaken = products.some(p => p.name === name && p.name !== originalName);
+  if(nameTaken){
+    alert('มีชุดสลากชื่อนี้อยู่แล้ว กรุณาตั้งชื่ออื่น');
+    return;
+  }
+
+  const bank = document.getElementById('f_bank').value;
+  const noGuarantee = document.getElementById('f_noGuarantee').checked;
+  const no3Digit = document.getElementById('f_no3Digit').checked;
+  const draws3 = document.getElementById('f_draws3').value === '' ? null : Number(document.getElementById('f_draws3').value);
+  const amt3 = document.getElementById('f_amt3').value === '' ? null : Number(document.getElementById('f_amt3').value);
+  const draws4 = document.getElementById('f_draws4').value === '' ? null : Number(document.getElementById('f_draws4').value);
+  const amt4 = document.getElementById('f_amt4').value === '' ? null : Number(document.getElementById('f_amt4').value);
+
+  const newProduct = {
+    name,
+    bank,
+    bankLabel: bank === 'gsb' ? 'ออมสิน' : 'ธ.ก.ส.',
+    unit: Number(document.getElementById('f_unit').value) || 0,
+    term: document.getElementById('f_term').value.trim() || `${document.getElementById('f_termYears').value} ปี`,
+    termYears: Number(document.getElementById('f_termYears').value) || 1,
+    interestPct: document.getElementById('f_interestPct').value.trim(),
+    interestPerUnit: Number(document.getElementById('f_interestPerUnit').value) || 0,
+    prize1: document.getElementById('f_prize1').value.trim(),
+    estimated: document.getElementById('f_estimated').checked,
+    noGuarantee,
+    no3Digit,
+    draws3: noGuarantee || no3Digit ? null : draws3,
+    amt3: noGuarantee || no3Digit ? null : amt3,
+    draws4: noGuarantee ? null : draws4,
+    amt4: noGuarantee ? null : amt4,
+    rate3: (!noGuarantee && !no3Digit && draws3 != null && amt3 != null) ? draws3 * amt3 : 0,
+    rate4: (!noGuarantee && draws4 != null && amt4 != null) ? draws4 * amt4 : 0,
+    lastModified: new Date().toISOString()
+  };
+
+  if(originalName){
+    // แก้ไขชุดเดิม — คงตำแหน่งในรายการ และย้าย overrides ไปชื่อใหม่ถ้าเปลี่ยนชื่อ
+    const idx = products.findIndex(p => p.name === originalName);
+    if(idx !== -1) products[idx] = newProduct;
+    if(originalName !== name && overrides[originalName]){
+      overrides[name] = overrides[originalName];
+      delete overrides[originalName];
+      saveOverrides();
+    }
+  } else {
+    products.push(newProduct);
+  }
+
+  saveProducts();
+  closeModal();
+  render(currentPrincipal);
+});
+
 document.getElementById('tableBody').addEventListener('click', (e) => {
-  const toggle = e.target.closest('.edit-toggle');
-  if(!toggle) return;
-  const key = toggle.dataset.toggle;
-  if(openPanels.has(key)) openPanels.delete(key); else openPanels.add(key);
-  render(currentPrincipal);
-});
-
-document.getElementById('tableBody').addEventListener('change', (e) => {
-  const t = e.target;
-  if(!t.classList.contains('mini-input')) return;
-  const name = t.dataset.name;
-  const field = t.dataset.field;
-  const value = parseFloat(t.value);
-  if(!overrides[name]) overrides[name] = {};
-  overrides[name][field] = isNaN(value) ? 0 : value;
-  saveOverrides();
-  render(currentPrincipal);
-});
-
-document.getElementById('resetOverridesBtn').addEventListener('click', () => {
-  if(confirm('ล้างค่าดอกเบี้ย/รางวัลต่องวดเลขท้ายที่แก้ไขไว้ทั้งหมด กลับเป็นค่าเริ่มต้น?')){
-    overrides = {};
-    saveOverrides();
-    render(currentPrincipal);
+  const editBtn = e.target.closest('[data-edit-product]');
+  if(editBtn){ openModalForEdit(editBtn.dataset.editProduct); return; }
+  const delBtn = e.target.closest('[data-delete-product]');
+  if(delBtn){
+    const name = delBtn.dataset.deleteProduct;
+    if(confirm(`ลบชุดสลาก "${name}" ออกจากตารางนี้?`)){
+      products = products.filter(p => p.name !== name);
+      delete overrides[name];
+      saveProducts();
+      saveOverrides();
+      render(currentPrincipal);
+    }
   }
-});
-
-// ---- แก้ไข "ข้อมูล ณ วันที่" — คลิกที่ตราประทับแล้วพิมพ์แก้ได้เลย ----
-const dateStampEl = document.getElementById('dateStamp');
-const printDateEl = document.getElementById('printDateStamp');
-try{
-  const savedDate = localStorage.getItem(DATE_KEY);
-  if(savedDate){
-    dateStampEl.textContent = savedDate;
-    printDateEl.textContent = savedDate;
-  }
-}catch(e){}
-dateStampEl.addEventListener('blur', () => {
-  const val = dateStampEl.textContent.trim() || 'ข้อมูล ณ ก.ค. 2569';
-  dateStampEl.textContent = val;
-  printDateEl.textContent = val;
-  try{ localStorage.setItem(DATE_KEY, val); }catch(e){}
-});
-dateStampEl.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter'){ e.preventDefault(); dateStampEl.blur(); }
 });
 
 </script>
